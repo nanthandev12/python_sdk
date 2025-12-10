@@ -96,14 +96,14 @@ class PerpetualStreamConnection(Generic[StreamMsgResponseType]):
         await self.close()
 
     async def __await_impl__(self):
-        extra_headers: dict[str, str] = {
+        additional_headers: dict[str, str] = {
             RequestHeader.USER_AGENT: USER_AGENT,
         }
 
         if self.__api_key is not None:
-            extra_headers[RequestHeader.API_KEY] = self.__api_key
+            additional_headers[RequestHeader.API_KEY] = self.__api_key
 
-        self.__websocket = await websockets.connect(self.__stream_url, extra_headers=extra_headers)
+        self.__websocket = await websockets.connect(self.__stream_url, additional_headers=additional_headers)
 
         LOGGER.debug("Connected to stream: %s", self.__stream_url)
 
