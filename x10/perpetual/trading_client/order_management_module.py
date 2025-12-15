@@ -93,11 +93,24 @@ class OrderManagementModule(BaseModule):
         url = self._get_url("/user/order/scaled")
         orders_json = [order.to_api_request_json(exclude_none=True) for order in orders]
         
-        response = await send_post_request(
-            await self.get_session(),
-            url,
-            dict,  # Response is a dict with order details and list of orders
-            json=orders_json,
-            api_key=self._get_api_key(),
-        )
-        return response
+        LOGGER.debug(f"Scaled order URL: {url}")
+        LOGGER.debug(f"Scaled order payload (first order): {orders_json[0] if orders_json else 'empty'}")
+        
+        try:
+            response = await send_post_request(
+                await self.get_session(),
+                url,
+                dict,  # Response is a dict with order details and list of orders
+                json=orders_json,
+                api_key=self._get_api_key(),
+            )
+            
+            if response is None:
+                LOGGER.error("send_post_request returned None for scaled order")
+                raise ValueError("Scaled order request returned None - endpoint may not exist or request failed")
+            
+            LOGGER.debug(f"Scaled order response received: {type(response)}")
+            return response
+        except Exception as e:
+            LOGGER.error(f"Error in place_scaled_order: {e}", exc_info=True)
+            raise
