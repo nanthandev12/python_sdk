@@ -79,3 +79,25 @@ class OrderManagementModule(BaseModule):
             json=request_model.to_api_request_json(exclude_none=True),
             api_key=self._get_api_key(),
         )
+
+    async def place_scaled_order(self, orders: List[NewOrderModel]):
+        """
+        Place multiple orders in a single scaled order request.
+        
+        :param orders: List of order objects created by `create_order_object` method.
+        
+        https://api.docs.extended.exchange/ (scaled order endpoint)
+        """
+        LOGGER.debug("Placing scaled order with %d orders", len(orders))
+
+        url = self._get_url("/user/order/scaled")
+        orders_json = [order.to_api_request_json(exclude_none=True) for order in orders]
+        
+        response = await send_post_request(
+            await self.get_session(),
+            url,
+            dict,  # Response is a dict with order details and list of orders
+            json=orders_json,
+            api_key=self._get_api_key(),
+        )
+        return response
